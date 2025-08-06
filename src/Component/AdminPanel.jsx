@@ -45,7 +45,8 @@ const AdminPanel = () => {
     toggleBlogPublish,
     addBlogCategory,
     updateBlogCategory,
-    deleteBlogCategory
+    deleteBlogCategory,
+    exportData
   } = useAdmin();
 
   // Authentication state
@@ -1090,6 +1091,13 @@ const AdminPanel = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <button
+                onClick={exportData}
+                className="flex items-center gap-2 bg-green-600/20 hover:bg-green-600/30 text-green-400 hover:text-green-300 px-4 py-2 rounded-lg transition-all duration-300 text-sm border border-green-600/30"
+                title="Export Data"
+              >
+                <FaFileUpload className="text-sm" /> Export Data
+              </button>
               <button
                 onClick={() => setShowChangePasswordModal(true)}
                 className="flex items-center gap-2 bg-gray-800/60 hover:bg-gray-700/60 text-gray-300 hover:text-white px-4 py-2 rounded-lg transition-all duration-300 text-sm border border-gray-600/30"

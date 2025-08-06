@@ -60,9 +60,20 @@ export default function Projects() {
                 <p className="text-gray-300 mb-4">{proj.description}</p>
                 {/* Project Actions */}
                 <div className="flex gap-3">
-                  <button className="flex-1 px-4 py-2 bg-purple-600/20 text-purple-400 rounded-lg hover:bg-purple-600/30 transition-all duration-300">
-                    View Live
-                  </button>
+                  {proj.link ? (
+                    <a 
+                      href={proj.link} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex-1 px-4 py-2 bg-purple-600/20 text-purple-400 rounded-lg hover:bg-purple-600/30 transition-all duration-300 text-center"
+                    >
+                      View Live
+                    </a>
+                  ) : (
+                    <button className="flex-1 px-4 py-2 bg-gray-600/20 text-gray-400 rounded-lg cursor-not-allowed transition-all duration-300">
+                      No Link
+                    </button>
+                  )}
                   <button
                     className="flex-1 px-4 py-2 bg-blue-600/20 text-blue-400 rounded-lg hover:bg-blue-600/30 transition-all duration-300"
                     onClick={() => handleOpenForm(proj.id)}

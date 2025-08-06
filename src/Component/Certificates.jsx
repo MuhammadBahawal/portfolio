@@ -28,7 +28,7 @@ function Certificates() {
   };
 
   const handleDownloadCertificate = (certificate) => {
-    const filePath = `/src/certificates/${certificate.file}`;
+    const filePath = `/certificates/${certificate.file}`;
     const link = document.createElement('a');
     link.href = filePath;
     link.download = certificate.file;
@@ -62,13 +62,13 @@ function Certificates() {
           <div className="flex-1 flex items-center justify-center p-6 pt-0 overflow-auto">
             {selectedCertificate.file.endsWith('.pdf') ? (
               <iframe
-                src={`/src/certificates/${selectedCertificate.file}`}
+                src={`/certificates/${selectedCertificate.file}`}
                 className="w-full h-[60vh] min-h-[300px] border-0 rounded-lg bg-white"
                 title={selectedCertificate.name}
               />
             ) : (
               <img
-                src={`/src/certificates/${selectedCertificate.file}`}
+                src={`/certificates/${selectedCertificate.file}`}
                 alt={selectedCertificate.name}
                 className="w-full h-auto max-h-[60vh] object-contain rounded-lg bg-white"
                 onError={(e) => {

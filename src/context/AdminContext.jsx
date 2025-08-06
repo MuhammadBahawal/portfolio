@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { portfolioData } from '../data/portfolioData';
 
 // Create the context
 const AdminContext = createContext();
@@ -12,120 +13,33 @@ export const useAdmin = () => {
   return context;
 };
 
-// Initial data
-const initialProjects = [
-  {
-    id: 1,
-    title: 'Tech Hub Institute',
-    description: 'A comprehensive educational platform for tech learning and skill development.',
-    image: './public/projects/tech hub tech institute  .png',
-    technologies: ['React', 'Node.js', 'MongoDB'],
-    link: 'https://github.com/bahawal/tech-hub',
-    price: '$299'
-  },
-  {
-    id: 2,
-    title: 'Hypernexis Software House',
-    description: 'Professional software development company website with modern design.',
-    image: '/src/projects/hypernexis software house .png',
-    technologies: ['React', 'Next.js', 'Tailwind CSS'],
-    link: 'https://github.com/bahawal/hypernexis',
-    price: '$499'
-  },
-  {
-    id: 3,
-    title: 'Cravy Crunch Restaurant',
-    description: 'Restaurant website with online ordering and menu management system.',
-    image: '/src/projects/cravy crunch restourent .png',
-    technologies: ['React', 'Express', 'MySQL'],
-    link: 'https://github.com/bahawal/cravy-crunch',
-    price: '$399'
-  },
-  {
-    id: 4,
-    title: 'Teqtronics',
-    description: 'Technology company website showcasing innovative solutions and services.',
-    image: '/src/projects/teqtronics.png',
-    technologies: ['React', 'Three.js', 'GSAP'],
-    link: 'https://github.com/bahawal/teqtronics',
-    price: '$450'
-  },
-  {
-    id: 5,
-    title: 'Color-On',
-    description: 'Creative design and branding platform with interactive color tools.',
-    image: '/src/projects/color-on.png',
-    technologies: ['React', 'Canvas API', 'CSS3'],
-    link: 'https://github.com/bahawal/color-on',
-    price: '$350'
-  }
-];
-
-const initialCertificates = [
-  { id: 1, title: "Python Basic", name: "Python Basic", file: "pyton basic certificate.pdf", category: "Programming", issuer: "Coursera", date: "2024", description: "Basic Python programming fundamentals" },
-  { id: 2, title: "Python Data Structure", name: "Python Data Structure", file: "python data structure certificate.pdf", category: "Programming", issuer: "Coursera", date: "2024", description: "Advanced Python data structures and algorithms" },
-  { id: 3, title: "Deep Learning AI", name: "Deep Learning AI", file: "deep learning ai.pdf", category: "AI/ML", issuer: "DeepLearning.AI", date: "2024", description: "Comprehensive deep learning course covering neural networks and AI applications" },
-  { id: 4, title: "Web Development", name: "Web Development", file: "Web development certificate.jpg", category: "Web Development", issuer: "FreeCodeCamp", date: "2024", description: "Full stack web development certification" },
-  { id: 5, title: "SEO", name: "SEO", file: "Seo.pdf", category: "Digital Marketing", issuer: "Google", date: "2024", description: "Search Engine Optimization fundamentals" },
-  { id: 6, title: "Digital Marketing", name: "Digital Marketing", file: "digital markiting.pdf", category: "Digital Marketing", issuer: "Google", date: "2024", description: "Google Digital Marketing certification" },
-  { id: 7, title: "Freelancer", name: "Freelancer", file: "freelancer.pdf", category: "Business", issuer: "Upwork", date: "2024", description: "Professional freelancing and business development" },
-  { id: 8, title: "E-commerce Management", name: "E-commerce Management", file: "E-commerce management.pdf", category: "Business", issuer: "Shopify", date: "2024", description: "E-commerce store management and optimization" },
-  { id: 9, title: "React", name: "React", file: "React certificate.pdf", category: "Web Development", issuer: "Meta", date: "2024", description: "Advanced React development and best practices" }
-];
-
-const initialBlogs = [];
-
-const initialBlogCategories = [
-  "Web Development",
-  "AI/ML", 
-  "Animation",
-  "Performance",
-  "Backend",
-  "CSS",
-  "JavaScript",
-  "React",
-  "Node.js",
-  "Database",
-  "DevOps",
-  "UI/UX"
-];
-
 // Provider component
 export const AdminProvider = ({ children }) => {
-  // Load from localStorage or use initial data
+  // Load from localStorage or use data from portfolioData file
   const [projects, setProjects] = useState(() => {
     const stored = localStorage.getItem('portfolio_projects');
-    return stored ? JSON.parse(stored) : initialProjects;
+    return stored ? JSON.parse(stored) : portfolioData.projects;
   });
 
   const [certificates, setCertificates] = useState(() => {
     const stored = localStorage.getItem('portfolio_certificates');
-    return stored ? JSON.parse(stored) : initialCertificates;
+    return stored ? JSON.parse(stored) : portfolioData.certificates;
   });
 
   const [blogs, setBlogs] = useState(() => {
     const stored = localStorage.getItem('portfolio_blogs');
-    return stored ? JSON.parse(stored) : initialBlogs;
+    return stored ? JSON.parse(stored) : portfolioData.blogs;
   });
 
   const [blogCategories, setBlogCategories] = useState(() => {
     const stored = localStorage.getItem('portfolio_blog_categories');
-    return stored ? JSON.parse(stored) : initialBlogCategories;
+    return stored ? JSON.parse(stored) : portfolioData.blogCategories;
   });
 
   // Analytics state
   const [analytics, setAnalytics] = useState(() => {
     const stored = localStorage.getItem('portfolio_analytics');
-    return stored ? JSON.parse(stored) : {
-      siteVisits: 1250,
-      onlineUsers: 3,
-      monthlyGrowth: {
-        projects: 12,
-        blogs: 7,
-        visits: 89,
-        certificates: 5
-      }
-    };
+    return stored ? JSON.parse(stored) : portfolioData.analytics;
   });
 
   // Save to localStorage whenever data changes
@@ -280,6 +194,29 @@ export const AdminProvider = ({ children }) => {
     setAnalytics(prev => ({ ...prev, ...newAnalytics }));
   };
 
+  // Export current data for persistence
+  const exportData = () => {
+    const currentData = {
+      projects,
+      certificates,
+      blogs,
+      blogCategories,
+      analytics
+    };
+    
+    // Create a downloadable JSON file
+    const dataStr = JSON.stringify(currentData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'portfolio-data.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const value = {
     // Data
     projects,
@@ -310,7 +247,10 @@ export const AdminProvider = ({ children }) => {
     deleteBlogCategory,
     
     // Analytics operations
-    updateAnalytics
+    updateAnalytics,
+    
+    // Export function
+    exportData
   };
 
   return (

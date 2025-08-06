@@ -285,7 +285,7 @@ function Header() {
               {/* Profile Image */}
               <div className="profile-image relative z-10">
                 <img
-                  src="./public/mypic.jpg"
+                  src="/mypic.jpg"
                   alt="Muhammad Bahawal"
                   className="w-64 h-64 lg:w-80 lg:h-80 rounded-full object-cover border-4 border-purple-500/30 shadow-2xl"
                   onError={(e) => {
