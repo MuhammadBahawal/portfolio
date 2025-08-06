@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .typing {
+    overflow: hidden;
+    white-space: nowrap;
+    border-right: 2px solid white;
+    animation: typing 3s steps(40, end), blink 0.75s step-end infinite;
+  }
+  .typing-delay {
+    overflow: hidden;
+    white-space: nowrap;
+    border-right: 2px solid white;
+    animation: typing 3s steps(40, end) 3.2s forwards, blink 0.75s step-end infinite 3.2s;
+  }
+
+  @keyframes typing {
+    from { width: 0 }
+    to { width: 100% }
+  }
+
+  @keyframes blink {
+    from, to { border-color: transparent }
+    50% { border-color: white }
+  }
+
+  .animate-spin-super-slow {
+    animation: spin 10s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 1s ease-in-out forwards;
+  }
+
+  .animate-fade-in-slow {
+    animation: fadeIn 2s ease-in-out forwards;
+  }
+
+  .fade-in-scale {
+    transform: scale(0.9);
+    animation: fadeInScale 1.5s ease-in-out forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+}
+body {
+  @apply cursor-none;
+}
+
+@keyframes bounceAndRotate {
+  0%, 100% {
+    transform: translateY(0) rotate(var(--rotation));
+  }
+  50% {
+    transform: translateY(-10px) rotate(var(--rotation));
+  }
+}
+
+.scroll-arrow {
+  animation: bounceAndRotate 1.2s infinite;
+  transition: transform 0.3s ease-in-out;
+}
