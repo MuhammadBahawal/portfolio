@@ -13,6 +13,38 @@ export const useAdmin = () => {
   return context;
 };
 
+// Real-time user tracking utilities
+const generateSessionId = () => {
+  return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+};
+
+const getActiveSessions = () => {
+  const sessions = localStorage.getItem('active_sessions');
+  return sessions ? JSON.parse(sessions) : {};
+};
+
+const updateActiveSessions = (sessionId, isActive = true) => {
+  const sessions = getActiveSessions();
+  const now = Date.now();
+  
+  if (isActive) {
+    sessions[sessionId] = now;
+  } else {
+    delete sessions[sessionId];
+  }
+  
+  // Clean up old sessions (older than 5 minutes)
+  const fiveMinutesAgo = now - (5 * 60 * 1000);
+  Object.keys(sessions).forEach(key => {
+    if (sessions[key] < fiveMinutesAgo) {
+      delete sessions[key];
+    }
+  });
+  
+  localStorage.setItem('active_sessions', JSON.stringify(sessions));
+  return Object.keys(sessions).length;
+};
+
 // Provider component
 export const AdminProvider = ({ children }) => {
   // Load from localStorage or use data from portfolioData file
@@ -41,6 +73,66 @@ export const AdminProvider = ({ children }) => {
     const stored = localStorage.getItem('portfolio_analytics');
     return stored ? JSON.parse(stored) : portfolioData.analytics;
   });
+
+  // Real-time user tracking state
+  const [liveUsers, setLiveUsers] = useState(0);
+  const [sessionId, setSessionId] = useState('');
+
+  // Initialize session tracking
+  useEffect(() => {
+    const newSessionId = generateSessionId();
+    setSessionId(newSessionId);
+    
+    // Update active sessions and get current count
+    const currentUsers = updateActiveSessions(newSessionId, true);
+    setLiveUsers(currentUsers);
+    
+    // Update analytics with live user count
+    setAnalytics(prev => ({
+      ...prev,
+      onlineUsers: currentUsers
+    }));
+
+    // Set up periodic updates for live user count
+    const interval = setInterval(() => {
+      const currentUsers = updateActiveSessions(newSessionId, true);
+      setLiveUsers(currentUsers);
+      setAnalytics(prev => ({
+        ...prev,
+        onlineUsers: currentUsers
+      }));
+    }, 30000); // Update every 30 seconds
+
+    // Cleanup on unmount
+    return () => {
+      clearInterval(interval);
+      updateActiveSessions(newSessionId, false);
+    };
+  }, []);
+
+  // Handle page visibility changes to update session status
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Page is hidden, mark session as inactive
+        updateActiveSessions(sessionId, false);
+      } else {
+        // Page is visible again, mark session as active
+        const currentUsers = updateActiveSessions(sessionId, true);
+        setLiveUsers(currentUsers);
+        setAnalytics(prev => ({
+          ...prev,
+          onlineUsers: currentUsers
+        }));
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [sessionId]);
 
   // Save to localStorage whenever data changes
   useEffect(() => {

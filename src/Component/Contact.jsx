@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { gsap } from "gsap";
 import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaGithub, FaLinkedin } from "react-icons/fa";
@@ -8,16 +7,13 @@ import emailjs from "@emailjs/browser";
 
 function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    description: ""
+  });
   const sectionRef = useRef();
-  const formRef = useRef();
-  
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors }
-  } = useForm();
 
   useEffect(() => {
     const elements = sectionRef.current.querySelectorAll('.animate-on-scroll');
@@ -27,31 +23,85 @@ function Contact() {
     );
   }, []);
 
-  const onSubmit = async (data) => {
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      toast.error("Please enter your name.");
+      return false;
+    }
+    if (!formData.email.trim()) {
+      toast.error("Please enter your email.");
+      return false;
+    }
+    if (!formData.description.trim()) {
+      toast.error("Please enter your project description.");
+      return false;
+    }
+    
+    const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+    if (!emailRegex.test(formData.email)) {
+      toast.error("Please enter a valid email address.");
+      return false;
+    }
+    
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
-      // EmailJS configuration
-      const templateParams = {
-        user_name: data.name,
-        user_email: data.email,
-        user_phone: data.phone || "Not provided",
-        message: data.description
+      console.log("=== CONTACT FORM SUBMISSION ===");
+      console.log("Form data:", formData);
+      
+      // Use the exact same approach as the working System Test
+      const testParams = {
+        user_name: formData.name,
+        user_email: formData.email,
+        user_phone: formData.phone || "Not provided",
+        message: formData.description
       };
 
-      await emailjs.send(
-        "service_u8nkfq8", // Your EmailJS service ID
-        "template_vg8yvg8", // Your EmailJS template ID
-        templateParams,
-        "coqd8TXoL3rGNrfy_" // Your EmailJS public key
+      console.log('Sending email with params:', testParams);
+      
+      const result = await emailjs.send(
+        "service_u8nkfq8",
+        "template_vg8yvg8",
+        testParams,
+        "coqd8TXoL3rGNrfy_"
       );
 
-      toast.success("Message sent successfully! I'll get back to you soon.");
-      reset();
-      setShowForm(false);
+      console.log('EmailJS result:', result);
+      
+      if (result.status === 200) {
+        console.log('✅ Contact form submission successful');
+        toast.success("Message sent successfully! I'll get back to you soon.");
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          description: ""
+        });
+      } else {
+        console.log('❌ Contact form submission failed');
+        toast.error('Contact form submission failed');
+      }
     } catch (error) {
-      console.error("Email error:", error);
-      toast.error("Failed to send message. Please try again.");
+      console.error('Contact form submission error:', error);
+      toast.error(`Failed to send message: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -135,20 +185,20 @@ function Contact() {
             <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-2xl p-8 border border-gray-700/50">
               <h3 className="text-2xl font-bold text-white mb-6">Hire Me</h3>
               
-              <form ref={formRef} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label className="block text-gray-300 text-sm font-medium mb-2">
                     Full Name *
                   </label>
                   <input
                     type="text"
-                    {...register("name", { required: "Name is required" })}
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
                     className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300"
                     placeholder="Your full name"
+                    required
                   />
-                  {errors.name && (
-                    <p className="text-red-400 text-sm mt-1">{errors.name.message}</p>
-                  )}
                 </div>
 
                 <div>
@@ -157,19 +207,13 @@ function Contact() {
                   </label>
                   <input
                     type="email"
-                    {...register("email", { 
-                      required: "Email is required",
-                      pattern: {
-                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                        message: "Invalid email address"
-                      }
-                    })}
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
                     className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300"
                     placeholder="your.email@example.com"
+                    required
                   />
-                  {errors.email && (
-                    <p className="text-red-400 text-sm mt-1">{errors.email.message}</p>
-                  )}
                 </div>
 
                 <div>
@@ -178,7 +222,9 @@ function Contact() {
                   </label>
                   <input
                     type="tel"
-                    {...register("phone")}
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
                     className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300"
                     placeholder="+92 310-1329836"
                   />
@@ -189,14 +235,14 @@ function Contact() {
                     Project Description *
                   </label>
                   <textarea
-                    {...register("description", { required: "Project description is required" })}
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
                     rows={6}
                     className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300 resize-none"
                     placeholder="Tell me about your project, requirements, timeline, and budget..."
+                    required
                   />
-                  {errors.description && (
-                    <p className="text-red-400 text-sm mt-1">{errors.description.message}</p>
-                  )}
                 </div>
 
                 <button

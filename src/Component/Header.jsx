@@ -219,25 +219,43 @@ function Header() {
     setHireSending(true);
     setHireError('');
     try {
-      await emailjs.send(
-        'service_5fee6mb',
-        'template_vg8yvg8',
-        {
-          from_name: hireForm.name,
-          from_email: hireForm.email,
-          contact: hireForm.contact,
-          description: hireForm.description,
-        },
-        'coqd8TXoL3rGNrfy_'
+      console.log("=== HEADER HIRE FORM SUBMISSION ===");
+      console.log("Form data:", hireForm);
+      
+      // Use the exact same approach as the working Contact component
+      const testParams = {
+        user_name: hireForm.name,
+        user_email: hireForm.email,
+        user_phone: hireForm.contact || "Not provided",
+        message: hireForm.description
+      };
+
+      console.log('Sending email with params:', testParams);
+      
+      const result = await emailjs.send(
+        "service_u8nkfq8",
+        "template_vg8yvg8",
+        testParams,
+        "coqd8TXoL3rGNrfy_"
       );
-      setHireSuccess(true);
-      setTimeout(() => {
-        setShowContactModal(false);
-        setHireSuccess(false);
-        setHireForm({ name: '', email: '', contact: '', description: '' });
-      }, 1800);
-    } catch (err) {
-      setHireError('Failed to send. Please try again.');
+
+      console.log('EmailJS result:', result);
+      
+      if (result.status === 200) {
+        console.log('✅ Header hire form submission successful');
+        setHireSuccess(true);
+        setTimeout(() => {
+          setShowContactModal(false);
+          setHireSuccess(false);
+          setHireForm({ name: '', email: '', contact: '', description: '' });
+        }, 1800);
+      } else {
+        console.log('❌ Header hire form submission failed');
+        setHireError('Failed to send. Please try again.');
+      }
+    } catch (error) {
+      console.error('Header hire form submission error:', error);
+      setHireError(`Failed to send message: ${error.message}`);
     } finally {
       setHireSending(false);
     }

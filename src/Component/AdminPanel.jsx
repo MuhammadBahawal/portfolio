@@ -69,6 +69,19 @@ const AdminPanel = () => {
   // Admin panel state
   const [activeTab, setActiveTab] = useState('projects');
 
+  // Ensure modals are closed when component mounts
+  useEffect(() => {
+    console.log('🔧 AdminPanel mounted - ensuring modals are closed');
+    setShowForgotModal(false);
+    setShowChangePasswordModal(false);
+    setForgotSuccess(false);
+    setForgotError('');
+    setChangePasswordSuccess(false);
+    setChangePasswordError('');
+    setChangePasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    setForgotEmail('');
+  }, []);
+
   const [editingItem, setEditingItem] = useState(null);
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState({
@@ -137,9 +150,12 @@ const AdminPanel = () => {
   // Handle change password
   const handleChangePassword = (e) => {
     e.preventDefault();
+    console.log('Change password form submitted');
     setChangePasswordError('');
     
     const credentials = getStoredCredentials();
+    console.log('Current credentials:', credentials);
+    console.log('Form data:', changePasswordData);
     
     if (changePasswordData.currentPassword !== credentials.password) {
       setChangePasswordError('Current password is incorrect.');
@@ -158,6 +174,7 @@ const AdminPanel = () => {
     
     // Save new password
     saveCredentials(credentials.username, changePasswordData.newPassword);
+    console.log('Password updated successfully');
     setChangePasswordSuccess(true);
     
     setTimeout(() => {
@@ -171,27 +188,56 @@ const AdminPanel = () => {
   const handleForgotSubmit = (e) => {
     e.preventDefault();
     setForgotError('');
-    setForgotSuccess(false);
+    
+    // Basic email validation
     if (!forgotEmail.match(/^\S+@\S+\.\S+$/)) {
-      setForgotError('Please enter a valid email address.');
+      setForgotError('Please enter a valid email address');
       return;
     }
-    setForgotSuccess(true);
+    
+    // Simulate email sending with better UX
+    setForgotError('Sending reset link...');
+    
     setTimeout(() => {
-      setShowForgotModal(false);
-      setForgotSuccess(false);
-      setForgotEmail('');
+      setForgotSuccess(true);
+      setForgotError('');
+      // Reset after showing success message
+      setTimeout(() => {
+        setShowForgotModal(false);
+        setForgotSuccess(false);
+        setForgotEmail('');
+      }, 3000);
     }, 2000);
   };
 
-  // Handle logout
   const handleLogout = () => {
+    console.log('🔄 Logout initiated - clearing all state...');
+    
+    // Clear all admin-related state
     setIsAuthenticated(false);
     setLoginData({ username: '', password: '' });
     setLoginError('');
+    
+    // Clear all modals
+    console.log('📋 Clearing modal states...');
+    setShowForgotModal(false);
+    setShowChangePasswordModal(false);
+    setForgotSuccess(false);
+    setForgotError('');
+    setChangePasswordSuccess(false);
+    setChangePasswordError('');
+    setChangePasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    setForgotEmail('');
+    
     // Clear auth session
+    console.log('🗑️ Clearing localStorage...');
     localStorage.removeItem('adminAuthToken');
     localStorage.removeItem('adminAuthTime');
+    localStorage.removeItem('adminCredentials');
+    
+    console.log('🔄 Forcing page reload for clean state...');
+    // Force page refresh to ensure clean state
+    window.location.reload();
   };
 
   // CRUD Handlers (same as before)
@@ -294,7 +340,7 @@ const AdminPanel = () => {
       title: '',
       content: '',
       excerpt: '',
-      category: BLOG_CATEGORIES[0],
+      category: blogCategories[0] || 'Web Development',
       tags: '',
       image: '',
       date: '',
@@ -322,7 +368,7 @@ const AdminPanel = () => {
     }
     setIsAddingBlog(false);
     setEditingBlog(null);
-    setBlogForm({ id: null, title: '', content: '', excerpt: '', category: BLOG_CATEGORIES[0], tags: '', image: '', date: '', published: false });
+    setBlogForm({ id: null, title: '', content: '', excerpt: '', category: blogCategories[0] || 'Web Development', tags: '', image: '', date: '', published: false });
     setBlogImagePreview('');
   };
   const handleDeleteBlog = (id) => {
@@ -431,7 +477,7 @@ const AdminPanel = () => {
         </form>
         {/* Forgot Password Modal */}
         {showForgotModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 animate-fade-in" onClick={e => { if (e.target === e.currentTarget) setShowForgotModal(false); }}>
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 animate-fade-in" onClick={e => { if (e.target === e.currentTarget) setShowForgotModal(false); }}>
             <div className="w-full max-w-md bg-gray-900 rounded-2xl shadow-2xl p-8 border border-purple-700/40 relative animate-slide-in flex flex-col gap-4 overflow-auto justify-center items-center">
               <button
                 onClick={() => setShowForgotModal(false)}
@@ -442,17 +488,22 @@ const AdminPanel = () => {
               </button>
               <h3 className="text-2xl font-bold text-purple-400 mb-2 flex items-center gap-2"><FaLock /> Forgot Password</h3>
               {forgotSuccess ? (
-                <div className="text-green-400 text-center py-8 text-lg font-semibold">A reset link has been sent to your email (simulated).</div>
+                <div className="text-green-400 text-center py-8 text-lg font-semibold">
+                  <div className="mb-4">✅ Reset link sent successfully!</div>
+                  <div className="text-sm text-gray-400">Check your email for password reset instructions.</div>
+                  <div className="text-xs text-gray-500 mt-2">(This is a simulation - no actual email is sent)</div>
+                </div>
               ) : (
                 <form onSubmit={handleForgotSubmit} className="w-full flex flex-col gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Admin Email</label>
+                    <label className="block text-sm font-medium mb-1 text-gray-300">Admin Email</label>
                     <input
                       type="email"
                       value={forgotEmail}
                       onChange={e => setForgotEmail(e.target.value)}
                       className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                       required
+                      placeholder="Enter your admin email"
                     />
                   </div>
                   {forgotError && <p className="text-red-400 text-sm mt-1">{forgotError}</p>}
@@ -471,66 +522,6 @@ const AdminPanel = () => {
               @keyframes slide-in { from { opacity: 0; transform: translateY(40px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
               .animate-slide-in { animation: slide-in 0.4s cubic-bezier(.4,2,.6,1) both; }
             `}</style>
-          </div>
-        )}
-        
-        {/* Change Password Modal */}
-        {showChangePasswordModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 animate-fade-in" onClick={e => { if (e.target === e.currentTarget) setShowChangePasswordModal(false); }}>
-            <div className="w-full max-w-md bg-gray-900 rounded-2xl shadow-2xl p-8 border border-purple-700/40 relative animate-slide-in flex flex-col gap-4 overflow-auto justify-center items-center">
-              <button
-                onClick={() => setShowChangePasswordModal(false)}
-                className="absolute top-3 right-3 text-gray-400 hover:text-white text-2xl font-bold px-2 z-10"
-                aria-label="Close"
-              >
-                ×
-              </button>
-              <h3 className="text-2xl font-bold text-purple-400 mb-2 flex items-center gap-2"><FaLock /> Change Password</h3>
-              {changePasswordSuccess ? (
-                <div className="text-green-400 text-center py-8 text-lg font-semibold">Password changed successfully!</div>
-              ) : (
-                <form onSubmit={handleChangePassword} className="w-full flex flex-col gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Current Password</label>
-                    <input
-                      type="password"
-                      value={changePasswordData.currentPassword}
-                      onChange={e => setChangePasswordData({...changePasswordData, currentPassword: e.target.value})}
-                      className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">New Password</label>
-                    <input
-                      type="password"
-                      value={changePasswordData.newPassword}
-                      onChange={e => setChangePasswordData({...changePasswordData, newPassword: e.target.value})}
-                      className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      required
-                      minLength={6}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Confirm New Password</label>
-                    <input
-                      type="password"
-                      value={changePasswordData.confirmPassword}
-                      onChange={e => setChangePasswordData({...changePasswordData, confirmPassword: e.target.value})}
-                      className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      required
-                    />
-                  </div>
-                  {changePasswordError && <p className="text-red-400 text-sm mt-1">{changePasswordError}</p>}
-                  <button
-                    type="submit"
-                    className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-300 text-lg mt-2"
-                  >
-                    Change Password
-                  </button>
-                </form>
-              )}
-            </div>
           </div>
         )}
       </div>
@@ -983,10 +974,14 @@ const AdminPanel = () => {
           <div className="w-12 h-12 bg-cyan-600/20 rounded-xl flex items-center justify-center">
             <FaUsers className="text-cyan-400 text-xl" />
           </div>
-          <div className="text-cyan-400 text-sm font-medium">Live</div>
+          <div className="flex items-center gap-2">
+            <div className="text-cyan-400 text-sm font-medium">Live</div>
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+          </div>
         </div>
         <div className="text-3xl font-bold text-white mb-2">{analytics.onlineUsers}</div>
-        <div className="text-gray-400 text-sm">Online Users</div>
+        <div className="text-gray-400 text-sm">Real-time Online Users</div>
+        <div className="text-xs text-gray-500 mt-1">Updates every 30 seconds</div>
       </div>
     </div>
   );
@@ -1099,7 +1094,10 @@ const AdminPanel = () => {
                 <FaFileUpload className="text-sm" /> Export Data
               </button>
               <button
-                onClick={() => setShowChangePasswordModal(true)}
+                onClick={() => {
+                  console.log('Settings button clicked');
+                  setShowChangePasswordModal(true);
+                }}
                 className="flex items-center gap-2 bg-gray-800/60 hover:bg-gray-700/60 text-gray-300 hover:text-white px-4 py-2 rounded-lg transition-all duration-300 text-sm border border-gray-600/30"
                 title="Change Password"
               >
@@ -1193,6 +1191,69 @@ const AdminPanel = () => {
         {(editingItem || isAdding) && renderForm()}
         {isAddingBlog && renderBlogForm()}
         
+        {/* Change Password Modal */}
+        {showChangePasswordModal && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 animate-fade-in" onClick={e => { if (e.target === e.currentTarget) setShowChangePasswordModal(false); }}>
+            <div className="w-full max-w-md bg-gray-900 rounded-2xl shadow-2xl p-8 border border-purple-700/40 relative animate-slide-in flex flex-col gap-4 overflow-auto justify-center items-center">
+              <button
+                onClick={() => setShowChangePasswordModal(false)}
+                className="absolute top-3 right-3 text-gray-400 hover:text-white text-2xl font-bold px-2 z-10"
+                aria-label="Close"
+              >
+                ×
+              </button>
+              <h3 className="text-2xl font-bold text-purple-400 mb-2 flex items-center gap-2"><FaLock /> Change Password</h3>
+              {changePasswordSuccess ? (
+                <div className="text-green-400 text-center py-8 text-lg font-semibold">Password changed successfully!</div>
+              ) : (
+                <form onSubmit={handleChangePassword} className="w-full flex flex-col gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-300">Current Password</label>
+                    <input
+                      type="password"
+                      value={changePasswordData.currentPassword}
+                      onChange={e => setChangePasswordData({...changePasswordData, currentPassword: e.target.value})}
+                      className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      required
+                      placeholder="Enter current password"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-300">New Password</label>
+                    <input
+                      type="password"
+                      value={changePasswordData.newPassword}
+                      onChange={e => setChangePasswordData({...changePasswordData, newPassword: e.target.value})}
+                      className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      required
+                      minLength={6}
+                      placeholder="Enter new password (min 6 characters)"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-300">Confirm New Password</label>
+                    <input
+                      type="password"
+                      value={changePasswordData.confirmPassword}
+                      onChange={e => setChangePasswordData({...changePasswordData, confirmPassword: e.target.value})}
+                      className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      required
+                      placeholder="Confirm new password"
+                    />
+                  </div>
+                  {changePasswordError && <p className="text-red-400 text-sm mt-1">{changePasswordError}</p>}
+                  <button
+                    type="submit"
+                    className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-300 text-lg mt-2"
+                  >
+                    Change Password
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+        )}
+        
         {/* Category Management Modal */}
         {showCategoryModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -1256,6 +1317,7 @@ const AdminPanel = () => {
             </div>
           </div>
         )}
+        
       </div>
     </div>
   );
