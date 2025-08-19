@@ -7,7 +7,7 @@ export const portfolioData = {
       description: 'A comprehensive educational platform for tech learning and skill development.',
       image: '/projects/tech hub tech institute  .png',
       technologies: ['React', 'Node.js', 'MongoDB'],
-      link: 'https://github.com/bahawal/tech-hub',
+      link: 'https://techhubsystems.com',
       price: '$299'
     },
     {
@@ -16,7 +16,7 @@ export const portfolioData = {
       description: 'Professional software development company website with modern design.',
       image: '/projects/hypernexis software house .png',
       technologies: ['React', 'Next.js', 'Tailwind CSS'],
-      link: 'https://github.com/bahawal/hypernexis',
+      link: 'https://hypernexis.tech',
       price: '$499'
     },
     {
@@ -25,7 +25,7 @@ export const portfolioData = {
       description: 'Restaurant website with online ordering and menu management system.',
       image: '/projects/cravy crunch restourent .png',
       technologies: ['React', 'Express', 'MySQL'],
-      link: 'https://github.com/bahawal/cravy-crunch',
+      link: 'https://cravycrunch.co.uk',
       price: '$399'
     },
     {
@@ -34,7 +34,7 @@ export const portfolioData = {
       description: 'Technology company website showcasing innovative solutions and services.',
       image: '/projects/teqtronics.png',
       technologies: ['React', 'Three.js', 'GSAP'],
-      link: 'https://github.com/bahawal/teqtronics',
+      link: 'https://teqtronics.com',
       price: '$450'
     },
     {
@@ -43,7 +43,7 @@ export const portfolioData = {
       description: 'Creative design and branding platform with interactive color tools.',
       image: '/projects/color-on.png',
       technologies: ['React', 'Canvas API', 'CSS3'],
-      link: 'https://github.com/bahawal/color-on',
+      link: 'https://color-on.in',
       price: '$350'
     }
   ],
